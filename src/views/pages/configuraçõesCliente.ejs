@@ -1,0 +1,33 @@
+<%- include('../partials/header') -%>
+<%- include('../partials/navbar') -%>
+
+<h1>Editar Cliente</h1>
+<form action="/clientes/<%= cliente.id %>" method="POST" class="editar-cliente-form">
+    <input type="hidden" name="_method" value="PUT">
+
+    <label for="nome">Nome:</label>
+    <input type="text" id="nome" name="nome" value="<%= cliente.nome %>" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" value="<%= cliente.email %>" required>
+
+    <button type="submit">Atualizar</button>
+</form>
+
+<h1>Trocar Senha</h1>
+<form action="/clientes/<%= cliente.id %>/senha" method="POST" class="trocar-senha-form">
+    <input type="hidden" name="_method" value="PUT">
+
+    <label for="senha">Nova Senha:</label>
+    <input type="password" id="senha" name="senha" required>
+
+    <button type="submit">Trocar Senha</button>
+</form>
+
+<h2>Deletar Cliente</h2>
+<form action="/clientes/<%= cliente.id %>" method="POST" class="deletar-cliente-form">
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="submit" class="delete-button">Deletar Cliente</button>
+</form>
+
+<%- include('../partials/footer') -%>
