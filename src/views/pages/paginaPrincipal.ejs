@@ -1,0 +1,162 @@
+<% include('../partials/head', { title: 'Página Principal' }) %>
+
+<div class="configuracao">
+    <button type="button">Configurações</button>
+</div>
+
+<div class="timer">
+    <button type="button">Configurar TomatoClock físico<a href="/configurar">Clique aqui</a></button>
+    <div>
+        <h1>TomatoClock Online</h1>
+        <button type="button">Short Break</button>
+        <button type="button">Long Break</button>
+        <button type="button">Pomodoro</button>
+        <h1><%= tempo %></h1>
+        <button type="button" onclick="startTimer()">Iniciar</button>
+        <button type="button" onclick="stopTimer()">Parar</button>
+        <button type="button" onclick="resetTimer()">Resetar</button>
+    </div>
+<div class="timer">
+    <button type="button">Configurar TomatoClock físico<a href="/configurar">Clique aqui</a></button>
+    <div>
+        <h1>TomatoClock Online</h1>
+        <button type="button" id="shortBreakBtn">Short Break</button>
+        <button type="button" id="longBreakBtn">Long Break</button>
+        <button type="button" id="pomodoroBtn">Pomodoro</button>
+        <h1 id="timerDisplay"><%= tempo %></h1>
+        <button type="button" id="startBtn" onclick="startTimer()">Iniciar</button>
+        <button type="button" id="stopBtn" onclick="stopTimer()">Parar</button>
+        <button type="button" id="resetBtn" onclick="resetTimer()">Resetar</button>
+    </div>
+    <div class="taks">
+        <h1>Lista de Tarefas</h1>
+        <form id="taskForm">
+            <input type="text" id="taskInput" placeholder="Adicionar nova tarefa" required>
+            <button type="submit">Adicionar</button>
+        </form>
+        <ul id="taskList"></ul>
+    </div>
+
+</div>
+
+<script>
+let timer;
+let timeLeft = 25 * 60; // segundos
+let currentType = 'pomodoro';
+const config = JSON.parse(localStorage.getItem('tomatoConfig')) || { pomodoro: 25, shortBreak: 5, longBreak: 15 };
+
+function updateDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timerDisplay').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function startTimer() {
+    if (!timer) {
+        timer = setInterval(() => {
+            timeLeft--;
+            updateDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timer = null;
+                alert('Tempo acabou!');
+                // Salvar sessão no BD via fetch
+                fetch('/api/sessoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cliente_id: 1, // Exemplo, usar sessão
+                        tipo: currentType,
+                        inicio: new Date(),
+                        fim: new Date(),
+                        duracao: config[currentType.replace('Break', 'Break').toLowerCase()],
+                        data: new Date().toISOString().split('T')[0]
+                    })
+                });
+            }
+        }, 1000);
+    }
+}
+
+function stopTimer() {
+    clearInterval(timer);
+    timer = null;
+}
+
+function resetTimer() {
+    stopTimer();
+    timeLeft = config[currentType.replace('Break', 'Break').toLowerCase()] * 60;
+    updateDisplay();
+}
+
+document.getElementById('pomodoroBtn').addEventListener('click', () => {
+    currentType = 'pomodoro';
+    resetTimer();
+});
+
+document.getElementById('shortBreakBtn').addEventListener('click', () => {
+    currentType = 'short_break';
+    resetTimer();
+});
+
+document.getElementById('longBreakBtn').addEventListener('click', () => {
+    currentType = 'long_break';
+    resetTimer();
+});
+
+// Tarefas
+document.getElementById('taskForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const descricao = document.getElementById('taskInput').value;
+    const li = document.createElement('li');
+    li.textContent = descricao;
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.addEventListener('change', async () => {
+        // Atualizar no BD
+        await fetch(`/api/tarefas/${li.dataset.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ concluida: checkbox.checked })
+        });
+    });
+    li.appendChild(checkbox);
+    document.getElementById('taskList').appendChild(li);
+    document.getElementById('taskInput').value = '';
+    // Salvar no BD
+    const response = await fetch('/api/tarefas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descricao })
+    });
+    const data = await response.json();
+    li.dataset.id = data.id; // Assumir que retorna id
+});
+
+// Carregar tarefas
+async function loadTasks() {
+    const response = await fetch('/api/tarefas');
+    const tarefas = await response.json();
+    tarefas.forEach(tarefa => {
+        const li = document.createElement('li');
+        li.textContent = tarefa.descricao;
+        li.dataset.id = tarefa.id;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = tarefa.concluida;
+        checkbox.addEventListener('change', async () => {
+            await fetch(`/api/tarefas/${tarefa.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ concluida: checkbox.checked })
+            });
+        });
+        li.appendChild(checkbox);
+        document.getElementById('taskList').appendChild(li);
+    });
+}
+
+loadTasks();
+</script>
+
+<% include('../partials/footer') %>

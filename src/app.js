@@ -27,8 +27,10 @@ app.use((req, res, next) => {
 });
 
 const clientesRoutes = require('./routes/clientesRoutes');
+const pomodoroRoutes = require('./routes/pomodoroRoutes');
 
 app.use('/', clientesRoutes);
+app.use('/api', pomodoroRoutes);
 
 app.get('/cadastro', (req, res) => {
     res.render('pages/cadastro');
@@ -40,6 +42,18 @@ app.get('/login', (req, res) => {
 
 app.get('/', (req, res) => {
     res.render('pages/index');
+});
+
+app.get('/paginaPrincipal', (req, res) => {
+    res.render('pages/paginaPrincipal', { tempo: '25:00' }); // Exemplo
+});
+
+app.get('/paginaSecundaria', (req, res) => {
+    res.render('pages/paginaSecundaria');
+});
+
+app.get('/configurar', (req, res) => {
+    res.render('pages/configurar');
 });
 
 module.exports = app;

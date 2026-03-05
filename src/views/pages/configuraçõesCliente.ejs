@@ -1,5 +1,4 @@
-<%- include('../partials/header') -%>
-<%- include('../partials/navbar') -%>
+<%- include('../partials/head', { title: 'Configurações' }) -%>
 
 <h1>Editar Cliente</h1>
 <form action="/clientes/<%= cliente.id %>" method="POST" class="editar-cliente-form">

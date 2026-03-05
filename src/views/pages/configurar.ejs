@@ -1,0 +1,32 @@
+<% include('../partials/head', { title: 'Configurar' }) %>
+
+<div class="configurar">
+    <h1>Configurar TomatoClock</h1>
+    <form id="configForm">
+        <label for="pomodoroTime">Tempo Pomodoro (min):</label>
+        <input type="number" id="pomodoroTime" value="25">
+
+        <label for="shortBreakTime">Short Break (min):</label>
+        <input type="number" id="shortBreakTime" value="5">
+
+        <label for="longBreakTime">Long Break (min):</label>
+        <input type="number" id="longBreakTime" value="15">
+
+        <button type="submit">Salvar Configurações</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('configForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const config = {
+        pomodoro: document.getElementById('pomodoroTime').value,
+        shortBreak: document.getElementById('shortBreakTime').value,
+        longBreak: document.getElementById('longBreakTime').value,
+    };
+    localStorage.setItem('tomatoConfig', JSON.stringify(config));
+    alert('Configurações salvas!');
+});
+</script>
+
+<% include('../partials/footer') %>

@@ -30,6 +30,4 @@ asyncDatabase = async () => {
   }
 };
 
-module.exports = asyncDatabase;
-
 module.exports = sequelize;

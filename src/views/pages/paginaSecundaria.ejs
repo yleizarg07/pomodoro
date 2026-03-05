@@ -1,0 +1,121 @@
+<% include('../partials/head', { title: 'Página Secundária' }) %>
+
+<div class="pagina-secundaria">
+    <h1>Escolha o que deseja fazer:</h1>
+    <select id="opcao" name="opcao" onchange="mostrarFormulario()">
+        <option value="tempo">Tempo de uso</option>
+        <option value="tarefas">Planer</option>
+        <option value="livros">Livros</option>
+</select>
+</div>
+
+<div id="tempo">
+    <div>
+        <h1>Tempo de uso</h1>
+    </div>
+    <diV>
+        <h2>Tempo do dia</h2>
+        <p>Escolha um dia:</p>
+        <input type="date" id="dataDia">
+        <h3>Informações:</h3>
+        <p>Horas totais: <span id="horasDia">0</span></p>
+        <p>Tarefas concluídas: <span id="tarefasDia">0</span></p>
+        <p>Gráfico: <canvas id="graficoDia"></canvas></p>
+    </diV>
+
+    <diV>
+        <h2>Tempo da semana</h2>
+        <p>Escolha uma semana:</p>
+        <input type="date" id="dataSemana">
+        <h3>Informações:</h3>
+        <p>Horas totais: <span id="horasSemana">0</span></p>
+        <p>Tarefas concluídas: <span id="tarefasSemana">0</span></p>
+        <p>Gráfico: <canvas id="graficoSemana"></canvas></p>
+    </diV>
+
+    <diV>
+        <h2>Tempo do mês</h2>
+        <p>Escolha um mês:</p>
+        <input type="date" id="dataMes">
+        <h3>Informações:</h3>
+        <p>Horas totais: <span id="horasMes">0</span></p>
+        <p>Tarefas concluídas: <span id="tarefasMes">0</span></p>
+        <p>Gráfico: <canvas id="graficoMes"></canvas></p>
+    </diV>
+
+    <div>
+        <h2>Tempo do ano</h2>
+        <p>Escolha um ano:</p>
+        <input type="date" id="dataAno">
+        <h3>Informações:</h3>
+        <p>Horas totais: <span id="horasAno">0</span></p>
+        <p>Tarefas concluídas: <span id="tarefasAno">0</span></p>
+        <p>Gráfico: <canvas id="graficoAno"></canvas></p>
+    </div>
+</div>
+
+<div id="planer" style="display: none;">
+    <h1>Planer</h1>
+    <p>Lista de tarefas futuras...</p>
+    <!-- Adicionar lista de tarefas aqui se necessário -->
+</div>
+
+<div id="livros" style="display: none;">
+    <h1>Livros</h1>
+    <p>Em breve...</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function mostrarFormulario() {
+    const opcao = document.getElementById('opcao').value;
+    document.getElementById('tempo').style.display = opcao === 'tempo' ? 'block' : 'none';
+    document.getElementById('planer').style.display = opcao === 'tarefas' ? 'block' : 'none';
+    document.getElementById('livros').style.display = opcao === 'livros' ? 'block' : 'none';
+}
+
+// Funções para calcular e atualizar dados
+async function atualizarDados(periodo, data) {
+    try {
+        const response = await fetch(`/api/tempo?periodo=${periodo}&data=${data}`);
+        const dados = await response.json();
+        document.getElementById(`horas${periodo.charAt(0).toUpperCase() + periodo.slice(1)}`).textContent = dados.horas.toFixed(2);
+        document.getElementById(`tarefas${periodo.charAt(0).toUpperCase() + periodo.slice(1)}`).textContent = dados.tarefas;
+        // Atualizar gráfico com dados reais
+    } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+    }
+}
+
+document.getElementById('dataDia').addEventListener('change', (e) => {
+    atualizarDados('dia', e.target.value);
+});
+
+document.getElementById('dataSemana').addEventListener('change', (e) => {
+    atualizarDados('semana', e.target.value);
+});
+
+document.getElementById('dataMes').addEventListener('change', (e) => {
+    atualizarDados('mes', e.target.value);
+});
+
+document.getElementById('dataAno').addEventListener('change', (e) => {
+    atualizarDados('ano', e.target.value);
+});
+
+// Exemplo de gráfico
+const ctx = document.getElementById('graficoDia').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Pomodoro', 'Short Break', 'Long Break'],
+        datasets: [{
+            label: 'Tempo (min)',
+            data: [25, 5, 15], // Dados de exemplo
+            backgroundColor: ['red', 'green', 'blue']
+        }]
+    }
+});
+</script>
+
+<% include('../partials/footer') %>

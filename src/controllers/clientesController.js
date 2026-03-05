@@ -5,7 +5,10 @@ const tamanho_maximo_da_senha = 20;
 
 async function criarUsuario(req, res) {
     try {
-        const { nome, email, senha } = req.body;
+        const { nome, email, senha, confirmarSenha } = req.body;
+        if (senha !== confirmarSenha) {
+            return res.status(400).json({ error: 'Senhas não coincidem' });
+        }
         if (!senha || senha.length < tamanho_minimo_da_senha) {
             return res.status(400).json({ error: 'Senha muito curta' });
         }
